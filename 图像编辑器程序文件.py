@@ -1,7 +1,6 @@
-import sys
 import time
 from tkinter import *
-from tkinter import colorchooser, simpledialog, filedialog, messagebox
+from tkinter import colorchooser, simpledialog, filedialog, messagebox, ttk
 from PIL import ImageGrab, ImageFilter, Image, ImageTk
 
 image_paths = ['1.png', '2.png', '3.png', '4.png']
@@ -147,16 +146,14 @@ def about():
 def button_click():
     selected_option = radio_var.get()
     root_1.destroy()
-    if selected_option == "无背景作画":
+    if selected_option == "涂鸦板创作模式":
         main(canvas_x, canvas_y)
-    elif selected_option == "有背景滤镜作画":
+    elif selected_option == "艺术滤镜创作模式":
         main_2()
 
 
 # 选择图片的函数
-def image_selector(image_paths):
-    import tkinter as tk
-
+def image_selector(image_paths, background_path):
     def display_image(index):
         try:
             image_path = image_paths[index]
@@ -176,19 +173,19 @@ def image_selector(image_paths):
         selected_image_path = image_paths[current_image_index]
         win.quit()  # 关闭窗口
 
-    win = tk.Tk()
+    win = Tk()
     win.title("图片展示")
-    win.geometry("420x400+600+200")
+    win.geometry("400x400+600+200")
+    win.resizable(False, False)
     current_image_index = 0
     selected_image_path = None
-
-    img_label = tk.Label(win)
+    img_label = Label(win)
     img_label.pack()
 
     display_image(current_image_index)
 
-    tk.Button(win, text="下一张", command=next_image).pack(side=tk.LEFT)
-    tk.Button(win, text="我选好了", command=select_image).pack(side=tk.RIGHT)
+    ttk.Button(win, text="下一张", command=next_image).pack(side=LEFT)
+    ttk.Button(win, text="我选好了", command=select_image).pack(side=RIGHT)
 
     win.mainloop()
     return selected_image_path
@@ -269,7 +266,7 @@ def main(x, y, image_photo=None):
 
 # 有背景作画主运行函数
 def main_2():
-    image_p = image_selector(image_paths)
+    image_p = image_selector(image_paths, "background2.jpg")
     root_why = Toplevel()
     ImageFilterApp(image_p, root_why)
     root_why.mainloop()
@@ -281,6 +278,7 @@ class ImageFilterApp:
         self.root = root
         self.root.title("图片滤镜对比工具")
         self.root.geometry("1000x600+500+200")
+        self.root.resizable(False, False)
 
         self.canvas_original = Canvas(self.root, width=300, height=300)
         self.canvas_filtered = Canvas(self.root, width=300, height=300)
@@ -295,12 +293,12 @@ class ImageFilterApp:
         filters = [("无", "NONE"), ("模糊", "BLUR"), ("轮廓", "CONTOUR"), ("细节", "DETAIL"),
                    ("边缘增强", "EDGE_ENHANCE")]
         for text, filter_type in filters:
-            Radiobutton(self.root, text=text, variable=self.filter_var, value=filter_type,
+            ttk.Radiobutton(self.root, text=text, variable=self.filter_var, value=filter_type,
                         command=self.apply_filter).grid(row=1, column=filters.index((text, filter_type)), padx=5,
                                                         pady=5)
 
-        Button(self.root, text="保存过滤后的图片", command=self.save_filtered_image).grid(row=2, column=0, columnspan=2,
-                                                                                          pady=10)
+        ttk.Button(self.root, text="保存过滤后的图片", command=self.save_filtered_image).grid(row=2, column=0, columnspan=2, pady=10)
+
 
         self.display_images()
 
@@ -334,8 +332,10 @@ class ImageFilterApp:
             if file_path:
                 self.img_filtered.save(file_path)
                 messagebox.showinfo("保存成功", f"图片已保存到: {file_path}")
+                self.status_var.set(f"图片已保存到: {file_path}")
         except Exception as e:
             messagebox.showerror("错误", f"保存失败: {str(e)}")
+            self.status_var.set("保存失败")
 
     def display_images(self):
         for canvas, img in zip([self.canvas_original, self.canvas_filtered], [self.img_original, self.img_filtered]):
@@ -346,15 +346,46 @@ class ImageFilterApp:
 
 
 if __name__ == '__main__':
+    # 创建主窗口
     root_1 = Tk()
-    root_1.geometry("500x300+500+300")
+    root_1.geometry("500x300+700+300")
     root_1.title("请选择")
+    root_1.resizable(False, False)
+
+    # 加载并设置背景图片
+    image = Image.open("background1.jpg")  # 替换为你自己的图片路径
+    image = image.resize((500, 300))  # 调整图片大小以适应窗口
+    background_image1 = ImageTk.PhotoImage(image)
+
+    # 创建一个Label控件用于显示背景图片
+    background_label1 = Label(root_1, image=background_image1)
+    background_label1.place(x=0, y=0, relwidth=1, relheight=1)  # 将图片铺满整个窗口
+
+    # 保持引用，避免图片被垃圾回收
+    background_label1.image = background_image1
+
+    # 使用place()来精确放置控件
+    label = Label(
+        root_1,
+        text='图 像 编 辑 器',
+        font=("Helvetica", 16, "bold"),
+        foreground="yellow",
+        background="lightblue"
+    )
+    label.place(x=175, y=50)  # 放置在窗口的指定位置
 
     radio_var = StringVar()
     radio_var.set("")  # 设置初始状态为空
 
-    Radiobutton(root_1, text="无背景作画", variable=radio_var, value="无背景作画").pack()
-    Radiobutton(root_1, text="有背景滤镜作画", variable=radio_var, value="有背景滤镜作画").pack()
-    Button(root_1, text="获取选择", command=button_click).pack()
+    # 使用ttk.Radiobutton
+    radio1 = ttk.Radiobutton(root_1, text="涂鸦板创作模式", variable=radio_var, value="涂鸦板创作模式")
+    radio1.place(x=185, y=100)
+
+    radio2 = ttk.Radiobutton(root_1, text="艺术滤镜创作模式", variable=radio_var, value="艺术滤镜创作模式")
+    radio2.place(x=180, y=130)
+
+    # 使用ttk.Button
+    button = ttk.Button(root_1, text="获取选择", command=button_click)
+    button.place(x=192, y=200)
 
     root_1.mainloop()
