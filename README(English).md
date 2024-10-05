@@ -66,9 +66,8 @@ python editor.py
 
 #### 8. About
 Author: 2011smallbear  
-Version: v4.0
+Version: v6.0
 
 #### 9. Recent Changes
-- Fixed an issue where filters couldn't be applied when drawing without a background.
-- Optimized the code, converting some `if` statements to `match` syntax.
-- Added more exception handling.
+- The interface is greatly optimized, and ttk is used
+- Authoring mode name change
