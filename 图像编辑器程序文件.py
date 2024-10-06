@@ -1,6 +1,9 @@
 import time
+import turtle
+import colorsys
 from tkinter import *
 from tkinter import colorchooser, simpledialog, filedialog, messagebox, ttk
+
 from PIL import ImageGrab, ImageFilter, Image, ImageTk
 
 image_paths = ['1.png', '2.png', '3.png', '4.png']
@@ -153,7 +156,7 @@ def button_click():
 
 
 # 选择图片的函数
-def image_selector(image_paths, background_path):
+def image_selector(image_paths):
     def display_image(index):
         try:
             image_path = image_paths[index]
@@ -266,10 +269,56 @@ def main(x, y, image_photo=None):
 
 # 有背景作画主运行函数
 def main_2():
-    image_p = image_selector(image_paths, "background2.jpg")
+    image_p = image_selector(image_paths)
     root_why = Toplevel()
     ImageFilterApp(image_p, root_why)
     root_why.mainloop()
+
+# 软件启动动画
+def cartoon():
+    # 初始化屏幕
+    screen = turtle.Screen()
+    screen.bgcolor("black")  # 设置背景为黑色
+    screen.title("图像编辑器")
+
+    # 创建一个turtle对象
+    pen = turtle.Turtle()
+    pen.hideturtle()  # 隐藏turtle形状
+    pen.speed(0)  # 设置画笔速度为最快
+    pen.penup()
+
+    # 定义文本和字体
+    text = "图  像  编  辑  器"
+    font_size = 60
+    font = ("Arial", font_size, "bold")
+
+    # 定义颜色渐变，从红色到紫色
+    def get_neon_colors(n):
+        colors = []
+        for i in range(n):
+            hue = i / n * 0.8  # 从红色(0)到紫色(0.8)
+            r, g, b = colorsys.hsv_to_rgb(hue, 1.0, 1.0)  # 使用HSV颜色模型来转换为RGB
+            colors.append((r, g, b))
+        return colors
+
+    # 在屏幕中央显示霓虹色彩的文本
+    def draw_neon_text(text):
+        pen.clear()  # 清除之前的内容
+        x_start = -len(text) * font_size // 4  # 计算文本起始x坐标
+        pen.setpos(x_start, 0)
+
+        colors = get_neon_colors(len(text))  # 获取渐变色
+        for index, char in enumerate(text):
+            pen.color(colors[index])  # 设置当前字符的颜色
+            pen.write(char, font=font, align="center")  # 写字符
+            pen.forward(font_size // 2)  # 向右移动画笔
+
+    # 绘制文本
+    draw_neon_text(text)
+
+    # 等待5秒后关闭窗口
+    time.sleep(2)
+    screen.bye()
 
 
 class ImageFilterApp:
@@ -279,9 +328,14 @@ class ImageFilterApp:
         self.root.title("图片滤镜对比工具")
         self.root.geometry("1000x600+500+200")
         self.root.resizable(False, False)
+        # 设置背景图片
+        self.background_image = Image.open("background2.jpg")  # 替换为你的背景图片路径
+        self.background_photo = ImageTk.PhotoImage(self.background_image.resize((1000, 600), Image.LANCZOS))
+        self.background_label = Label(self.root, image=self.background_photo)
+        self.background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-        self.canvas_original = Canvas(self.root, width=300, height=300)
-        self.canvas_filtered = Canvas(self.root, width=300, height=300)
+        self.canvas_original = Canvas(self.root, width=300, height=300, bg='white')
+        self.canvas_filtered = Canvas(self.root, width=300, height=300, bg='white')
 
         self.canvas_original.grid(row=0, column=0, padx=10, pady=10)
         self.canvas_filtered.grid(row=0, column=1, padx=10, pady=10)
@@ -294,11 +348,11 @@ class ImageFilterApp:
                    ("边缘增强", "EDGE_ENHANCE")]
         for text, filter_type in filters:
             ttk.Radiobutton(self.root, text=text, variable=self.filter_var, value=filter_type,
-                        command=self.apply_filter).grid(row=1, column=filters.index((text, filter_type)), padx=5,
-                                                        pady=5)
+                            command=self.apply_filter).grid(row=1, column=filters.index((text, filter_type)), padx=5,
+                                                            pady=5)
 
-        ttk.Button(self.root, text="保存过滤后的图片", command=self.save_filtered_image).grid(row=2, column=0, columnspan=2, pady=10)
-
+        ttk.Button(self.root, text="保存过滤后的图片", command=self.save_filtered_image).grid(row=2, column=0,
+                                                                                              columnspan=2, pady=10)
 
         self.display_images()
 
@@ -346,6 +400,7 @@ class ImageFilterApp:
 
 
 if __name__ == '__main__':
+    cartoon()  # 启动动画效果
     # 创建主窗口
     root_1 = Tk()
     root_1.geometry("500x300+700+300")
